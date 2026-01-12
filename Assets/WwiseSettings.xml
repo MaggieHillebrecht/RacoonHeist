@@ -1,0 +1,29 @@
+<?xml version='1.0'?>
+<WwiseSettings>
+    <CopySoundBanksAsPreBuildStep>true</CopySoundBanksAsPreBuildStep>
+    <GenerateSoundBanksAsPreBuildStep>false</GenerateSoundBanksAsPreBuildStep>
+    <SoundbankPath>Audio/GeneratedSoundBanks</SoundbankPath>
+    <CreatedPicker>true</CreatedPicker>
+    <CreateWwiseGlobal>true</CreateWwiseGlobal>
+    <CreateWwiseListener>true</CreateWwiseListener>
+    <ObjectReferenceAutoCleanup>true</ObjectReferenceAutoCleanup>
+    <LoadSoundEngineInEditMode>true</LoadSoundEngineInEditMode>
+    <ShowMissingRigidBodyWarning>true</ShowMissingRigidBodyWarning>
+    <ShowSpatialAudioWarningMsg>true</ShowSpatialAudioWarningMsg>
+    <WwiseInstallationPathMac>/Applications/Audiokinetic/Wwise2024.1.10.8979/Wwise.app</WwiseInstallationPathMac>
+    <WwiseInstallationPathWindows></WwiseInstallationPathWindows>
+    <WwiseProjectPath>../../Racc00nGame/Racc00n Game_WwiseProject/Racc00n Game v3_WwiseProject.wproj</WwiseProjectPath>
+    <UseWaapi>true</UseWaapi>
+    <WaapiPort>8080</WaapiPort>
+    <WaapiIP>127.0.0.1</WaapiIP>
+    <InstallationWasRequested>false</InstallationWasRequested>
+    <UseGitRepository>true</UseGitRepository>
+    <PackageSource></PackageSource>
+    <AddressableBankFolder>WwiseData/Bank</AddressableBankFolder>
+    <UseCustomBuildScript>false</UseCustomBuildScript>
+    <AddressableAssetBuilderPath>Assets/AddressableAssetsData/DataBuilders/BuildScriptWwisePacked.asset</AddressableAssetBuilderPath>
+    <AutomaticallyUpdateExternalSourcesPath>false</AutomaticallyUpdateExternalSourcesPath>
+    <ExternalSourcesPath>WwiseData/Bank</ExternalSourcesPath>
+    <XMLTranslatorTimeout>0</XMLTranslatorTimeout>
+    <WaapiTranslatorTimeout>0</WaapiTranslatorTimeout>
+</WwiseSettings>
