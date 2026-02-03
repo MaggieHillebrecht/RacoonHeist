@@ -1,26 +1,31 @@
 using UnityEngine;
 
-[RequireComponent(typeof(Collider))]
 public class TrampolineBounce : MonoBehaviour
 {
-    [Header("Bounce Settings")]
-    [SerializeField] private float bounceHeight = 10f;
+    [Header("Player Bounce")]
+    public float playerBounceForce = 12f;
 
-    private void OnTriggerEnter(Collider other)
+    [Header("Object Bounce")]
+    public float objectBounceForce = 10f;
+
+    private void OnCollisionEnter(Collision collision)
     {
-        Rigidbody rb = other.attachedRigidbody;
+        // ---------- PLAYER ----------
+        PlayerJump playerJump = collision.gameObject.GetComponent<PlayerJump>();
+        if (playerJump != null)
+        {
+            playerJump.Bounce(playerBounceForce);
+            return;
+        }
+
+        // ---------- OTHER OBJECTS ----------
+        Rigidbody rb = collision.rigidbody;
         if (rb == null) return;
 
-        Vector3 velocity = rb.linearVelocity;
-        velocity.y = bounceHeight;
-        rb.linearVelocity = velocity;
-    }
+        Vector3 vel = rb.linearVelocity;
+        vel.y = 0f;
+        rb.linearVelocity = vel;
 
-    private void OnDrawGizmosSelected()
-    {
-        Gizmos.color = Color.yellow;
-        Collider col = GetComponent<Collider>();
-        if (col != null)
-            Gizmos.DrawWireCube(col.bounds.center, col.bounds.size);
+        rb.AddForce(Vector3.up * objectBounceForce, ForceMode.VelocityChange);
     }
 }

@@ -6,18 +6,30 @@ public class ItemInteract : MonoBehaviour
     public Rigidbody playerRb;
     public Transform grabPoint;
 
-    [Header("Settings")]
+    [Header("Interaction Settings")]
     public float interactRange = 4f;
-    public float breakForce = 2000f;
-    public float damping = 60f;
-    public LayerMask interactLayers;
+
+    [Header("Pull Settings (Heavy / Hinged Objects)")]
+    public float pullForce = 6000f;
+    public float pullDamping = 150f;
+    public float maxPullSpeed = 4f;
+
+    [Header("Pickup Hold Settings (Light Objects)")]
+    public float holdForce = 20000f;
+    public float holdDamping = 200f;
+    public float maxHoldSpeed = 10f;
+
+    [Header("Layers")]
+    public LayerMask pullLayers;
+    public LayerMask pickupLayers;
 
     GameObject grabbedObj;
     Rigidbody grabbedRb;
-    ConfigurableJoint joint;
 
     PlayerInputHandler input;
     PlayerInteractionState interactionState;
+
+    bool isHoldingPickup = false;
 
     void Awake()
     {
@@ -37,112 +49,112 @@ public class ItemInteract : MonoBehaviour
         input.OnInteractReleased -= Drop;
     }
 
+    void FixedUpdate()
+    {
+        if (grabbedRb == null) return;
+
+        if (isHoldingPickup)
+        {
+            HoldObject();
+        }
+        else
+        {
+            PullObject();
+        }
+    }
+
+    void HoldObject()
+    {
+        Vector3 targetPos = grabPoint.position;
+        Vector3 toTarget = targetPos - grabbedRb.worldCenterOfMass;
+
+        grabbedRb.AddForce(toTarget * holdForce * Time.fixedDeltaTime, ForceMode.Acceleration);
+        grabbedRb.AddForce(-grabbedRb.linearVelocity * holdDamping * Time.fixedDeltaTime, ForceMode.Acceleration);
+
+        if (grabbedRb.linearVelocity.magnitude > maxHoldSpeed)
+            grabbedRb.linearVelocity = grabbedRb.linearVelocity.normalized * maxHoldSpeed;
+    }
+
+    void PullObject()
+    {
+        Vector3 targetPos = grabPoint.position;
+        Vector3 toTarget = targetPos - grabbedRb.worldCenterOfMass;
+
+        toTarget.y = 0f;
+
+        grabbedRb.AddForce(toTarget * pullForce * Time.fixedDeltaTime, ForceMode.Acceleration);
+        grabbedRb.AddForce(-grabbedRb.linearVelocity * pullDamping * Time.fixedDeltaTime, ForceMode.Acceleration);
+
+        if (grabbedRb.linearVelocity.magnitude > maxPullSpeed)
+            grabbedRb.linearVelocity = grabbedRb.linearVelocity.normalized * maxPullSpeed;
+    }
+
     void TryGrab()
     {
-        Debug.Log("TryGrab called");
+        if (grabbedRb != null) return;
 
-        if (grabbedObj != null)
+        Collider[] pickupHits = Physics.OverlapSphere(grabPoint.position, interactRange, pickupLayers);
+
+        foreach (Collider col in pickupHits)
         {
-            Debug.Log("Already grabbing an object: " + grabbedObj.name);
-            return;
-        }
-
-        Collider[] hits = Physics.OverlapSphere(transform.position, interactRange, interactLayers);
-        Debug.Log("Found " + hits.Length + " objects in range");
-
-        foreach (Collider col in hits)
-        {
-            Debug.Log("Hit object: " + col.name);
             Rigidbody rb = col.attachedRigidbody;
-
-            if (rb == null)
-            {
-                Debug.Log("No Rigidbody attached, skipping");
-                continue;
-            }
-
-            if (rb.isKinematic)
-            {
-                Debug.Log("Rigidbody is kinematic, skipping");
-                continue;
-            }
+            if (rb == null || rb.isKinematic) continue;
 
             grabbedObj = rb.gameObject;
             grabbedRb = rb;
 
-            Debug.Log("Attempting to grab: " + grabbedObj.name);
-            CreateJoint(col);
+            StartPickup();
             interactionState?.StartPulling();
-            Debug.Log("Grab successful");
-
             return;
         }
 
-        Debug.Log("No valid object found to grab");
+        Collider[] pullHits = Physics.OverlapSphere(grabPoint.position, interactRange, pullLayers);
+
+        foreach (Collider col in pullHits)
+        {
+            Rigidbody rb = col.attachedRigidbody;
+            if (rb == null || rb.isKinematic) continue;
+
+            grabbedObj = rb.gameObject;
+            grabbedRb = rb;
+
+            isHoldingPickup = false;
+            interactionState?.StartPulling();
+            return;
+        }
     }
 
-    void CreateJoint(Collider col)
+    void StartPickup()
     {
-        Vector3 grabPointWorld = col.ClosestPoint(grabPoint.position);
-        Debug.Log("Grab point world position: " + grabPointWorld);
-
-        joint = grabbedObj.AddComponent<ConfigurableJoint>();
-        joint.connectedBody = playerRb;
-        joint.autoConfigureConnectedAnchor = false;
-
-        joint.anchor = grabbedObj.transform.InverseTransformPoint(grabPointWorld);
-        joint.connectedAnchor = playerRb.transform.InverseTransformPoint(grabPoint.position);
-
-        Debug.Log("Joint anchor: " + joint.anchor + ", connectedAnchor: " + joint.connectedAnchor);
-
-        SoftJointLimit limit = new SoftJointLimit { limit = 0.1f };
-        joint.linearLimit = limit;
-
-        joint.xMotion = joint.yMotion = joint.zMotion = ConfigurableJointMotion.Limited;
-        joint.angularXMotion = joint.angularYMotion = joint.angularZMotion = ConfigurableJointMotion.Free;
-
-        JointDrive drive = new JointDrive
-        {
-            positionSpring = 0f,
-            positionDamper = damping,
-            maximumForce = Mathf.Infinity
-        };
-
-        joint.xDrive = joint.yDrive = joint.zDrive = drive;
-
-        joint.breakForce = breakForce;
-        joint.breakTorque = breakForce;
-        joint.enableCollision = true;
-
-        Debug.Log("Joint created on: " + grabbedObj.name);
+        isHoldingPickup = true;
+        grabbedRb.useGravity = false;
+        grabbedRb.linearDamping = 5f;
+        grabbedRb.angularDamping = 5f;
     }
 
     void Drop()
     {
-        if (grabbedObj == null)
-        {
-            Debug.Log("Drop called, but no object is grabbed");
-            return;
-        }
+        if (grabbedRb == null) return;
 
-        if (joint != null)
+        if (isHoldingPickup)
         {
-            Destroy(joint);
-            Debug.Log("Joint destroyed");
+            grabbedRb.useGravity = true;
+            grabbedRb.linearDamping = 0f;
+            grabbedRb.angularDamping = 0.05f;
         }
-
-        Debug.Log("Dropped object: " + grabbedObj.name);
 
         grabbedObj = null;
         grabbedRb = null;
-        joint = null;
+        isHoldingPickup = false;
 
         interactionState?.StopPulling();
     }
 
     void OnDrawGizmosSelected()
     {
+        if (grabPoint == null) return;
+
         Gizmos.color = Color.yellow;
-        Gizmos.DrawWireSphere(transform.position, interactRange);
+        Gizmos.DrawWireSphere(grabPoint.position, interactRange);
     }
 }

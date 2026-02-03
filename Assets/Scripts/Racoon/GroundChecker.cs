@@ -20,7 +20,7 @@ public class GroundChecker : MonoBehaviour
             checkPos,
             checkRadius,
             groundMask,
-            QueryTriggerInteraction.Ignore // 👈 important
+            QueryTriggerInteraction.Ignore
         );
 
         if (hit)
@@ -29,7 +29,5 @@ public class GroundChecker : MonoBehaviour
             GroundNormal = Vector3.up;
         }
 
-        Debug.DrawLine(checkPos, checkPos + Vector3.up * 0.5f, hit ? Color.green : Color.red);
-        Debug.Log("Ground hit: " + hit);
     }
 }

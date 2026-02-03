@@ -21,4 +21,10 @@ public class PlayerJump : MonoBehaviour
             motor.SetVerticalVelocity(jumpForce);
         }
     }
+
+    public void Bounce(float force)
+    {
+        Debug.Log($"[TRAMPOLINE] Bounce with force {force}");
+        motor.SetVerticalVelocity(force);
+    }
 }
