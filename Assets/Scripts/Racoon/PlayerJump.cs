@@ -14,8 +14,6 @@ public class PlayerJump : MonoBehaviour
 
     public void OnJumpPressed()
     {
-        Debug.Log($"[JUMP] OnJumpPressed | grounded={groundChecker.IsGrounded}");
-
         if (groundChecker.IsGrounded)
         {
             motor.SetVerticalVelocity(jumpForce);
@@ -24,7 +22,6 @@ public class PlayerJump : MonoBehaviour
 
     public void Bounce(float force)
     {
-        Debug.Log($"[TRAMPOLINE] Bounce with force {force}");
         motor.SetVerticalVelocity(force);
     }
 }

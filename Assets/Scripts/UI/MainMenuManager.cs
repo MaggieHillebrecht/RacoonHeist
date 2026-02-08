@@ -11,7 +11,7 @@ public class MainMenuManager : MonoBehaviour
     [Header("Wwise")]
     public AK.Wwise.State GameplayState;
 
-    public AK.Wwise.Event musicEvent;    // <— assign the SAME event that starts the music transition
+    public AK.Wwise.Event musicEvent;    
 
     public PauseMenu pauseMenu;
 
