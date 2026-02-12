@@ -111,3 +111,11 @@ WwiseUnityIntegration_*.zip
 GeneratedAssets_deleted/
 logRunSetup*.txt
 
+# Wwise generated content (should not be versioned)
+**/GeneratedSoundBanks/
+**/*.bnk
+**/*.wem
+**/*.prof
+
+# macOS debug symbols (huge)
+**/*.dSYM/
